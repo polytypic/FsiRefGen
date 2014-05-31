@@ -122,7 +122,7 @@ let rec itemize ls =
        elif text.StartsWith "///" then
          outside indent path items (text.Substring 3::docs) attrs lines
        else
-         let nest docs attrs kind id indent' tokens =
+         let nest path docs attrs kind id indent' tokens =
             let (body, lines) = outside indent' (id::path) [] [] [] lines
             let item = {Doc = List.rev docs
                         Attr = List.rev attrs
@@ -136,24 +136,24 @@ let rec itemize ls =
          let tokens = summarize text
          match tokens with
           | T("namespace"|"module" as kind)::Id (id, _, path, []) ->
-            nest docs attrs kind (String.concat "." (List.rev (id::path))) indent tokens
+            nest path docs attrs kind id indent tokens
           | T("type" as kind) as t::Attr (attr, (T id::_ as ts)) ->
-            nest docs (attr::attrs) kind id i (t::ts)
+            nest path docs (attr::attrs) kind id i (t::ts)
           | T("exception" as kind) as t::(T id::_ as ts) ->
-            nest docs (attrs) kind id i (t::ts)
+            nest path docs (attrs) kind id i (t::ts)
           | T"static"::T"member"::T id::T":"::_ ->
-            nest docs attrs "static member" id i tokens
+            nest path docs attrs "static member" id i tokens
           | T"static"::T"member"::T "("::T id::T ")"::T":"::_ ->
-            nest docs attrs "static member" id i tokens
+            nest path docs attrs "static member" id i tokens
           | T("val" as kind)::T("mutable")::T id::T":"::_
           | T("val" as kind)::T"("::T id::T")"::T":"::_
           | T("module"|"namespace" as kind)::T id::[T"="]
           | T("abstract"|"default"|"member"|"val" as kind)::T id::T":"::_
           | T("type" as kind)::T id::([]|T"<"::_|T":>"::_|T"="::_)
           | T("new" as id as kind)::T":"::_ ->
-            nest docs attrs kind id i tokens
+            nest path docs attrs kind id i tokens
           | T id::T":"::_ ->
-            nest docs attrs "field" id i tokens
+            nest path docs attrs "field" id i tokens
           | Attr (attr, []) ->
             outside indent path items docs (attr::attrs) lines
           | T("{"|"}"|"->"|"*"|"inherit"|"end")::_ ->
@@ -180,85 +180,103 @@ let linkName id path kind =
    asText (prefix + String.concat "." (List.rev (id::path)))
 
 let printTokens wr id2items space inSection toSection linkId path kind ts =
-  let linked = ref false
+  let linked = ref (Option.isNone linkId)
   let spaces n = String.replicate n space
   let rec loop = function
-   | (id, n)::ts when not (!linked) && linkId = Some id ->
-     linked := true
-     let text = asText id
-     let link = linkName id path kind
-     let id = match inSection with
-               | None -> " "
-               | Some inSection -> sprintf " id=\"%s:%s\" " inSection link
-     fprintf wr "<a%shref=\"#%s:%s\">%s</a>%s" id toSection link text (spaces n)
-     loop ts
    | (k, n)::ts when keywordSet.Contains k ->
      if k = ":" || k = "->" then linked := true
      fprintf wr "<b>%s</b>%s" (asText k) (spaces n) ; loop ts
    | ("'", _)::(t, n)::ts ->
      fprintf wr "<i>'%s</i>%s" (asText t) (spaces n) ; loop ts
-   | Id (id, n, idPath, ts)
+   | Id (id, n, fullIdPath, ts)
        when Option.isSome (Map.tryFind id id2items)
          && (id <> "unit" || id = "unit" && not (!linked)) ->
-     let rec parts id idPath ts =
-       let kindsFilter =
-         match ts with
-          | T"<"::_ -> fun item -> item.Kind = Some "type"
-          | T"."::_ -> fun item -> item.Kind = Some "module"
-          | _ -> fun item -> true
-       let rec cmp = function
-        | ([], _) -> true
-        | (_, []) -> true
-        | (p1::p1s, p2::p2s) ->
-          p1 = p2 && cmp (p1s, p2s)
-       let pathFilter (item: Item) =
-         match idPath with
-          | [] ->
-            //printf "%A %A\n" path item.Path
-            let rec paths = function
-             | [] -> false
-             | (_::rest) as path ->
-               path = item.Path || paths rest
-            paths path
-          | _ ->
-            cmp (idPath, item.Path)
-
-       let filterIfNotUnique pred xs =
-         match xs with
-          | [_] -> xs
-          | _ -> List.filter pred xs
-
-       let items =
-         match Map.tryFind id id2items with
-          | None -> []
-          | Some items ->
-            items
-            |> filterIfNotUnique kindsFilter
-            |> filterIfNotUnique pathFilter
-            |> List.sortBy (fun item -> item.Kind)
-
-       let items =
-         match items with
-          | [i1; i2] when i1.Kind = Some "module" && i2.Kind = Some "type" -> [i2]
-          | _ -> items
-
-       match idPath with
-        | [] -> ()
-        | id::idPath ->
-          parts id idPath [(".", 0)]
-          fprintf wr "<b>.</b>"
-
-       match items with
-        | [item] when cmp (idPath, item.Path) ->
-          let link = linkName id item.Path item.Kind
-          fprintf wr "<a href=\"#%s:%s\">%s</a>"
-           "def" link (asText id)
-        | _ ->
-          let longId = String.concat "." (List.rev (id::idPath))
-          printf "Failed to resolve: %s\n" longId
-          fprintf wr "%s" (asText id)
      
-     parts id idPath ts
+     let rec parts id idPath ts =
+       if not (!linked) && linkId = Some id then
+         linked := true
+
+         match idPath with
+          | [] -> ()
+          | id::idPath ->
+            parts id idPath [(".", 0)]
+            fprintf wr "<b>.</b>"
+
+         let text = asText id
+         let link = linkName id path kind
+         let id = match inSection with
+                   | None -> " "
+                   | Some inSection -> sprintf " id=\"%s:%s\" " inSection link
+         fprintf wr "<a%shref=\"#%s:%s\">%s</a>%s" id toSection link text (spaces n)
+       else
+         let kindsFilter =
+           match ts with
+            | T"<"::_ -> fun item -> item.Kind = Some "type"
+            | T"."::_ -> fun item -> item.Kind = Some "module"
+            | _ -> fun item -> true
+
+         let rec cmp = function
+          | ([], _) -> true
+          | (_, []) -> true
+          | (p1::p1s, p2::p2s) ->
+            p1 = p2 && cmp (p1s, p2s)
+
+         let pathFilter (item: Item) =
+           match idPath with
+            | [] ->
+              //printf "%A %A\n" path item.Path
+              let rec paths = function
+               | [] -> false
+               | (_::rest) as path ->
+                 path = item.Path || paths rest
+              paths path
+            | _ ->
+              cmp (idPath, item.Path)
+
+         let filterIfNotUnique pred xs =
+           match xs with
+            | [_] -> xs
+            | _ -> List.filter pred xs
+
+         let items =
+           match Map.tryFind id id2items with
+            | None -> []
+            | Some items ->
+              items
+              |> filterIfNotUnique kindsFilter
+              |> filterIfNotUnique pathFilter
+              |> List.sortBy (fun item -> item.Kind)
+
+         let items =
+           match items with
+            | [i1; i2] when i1.Kind = Some "module" && i2.Kind = Some "type" -> [i2]
+            | _ -> items
+
+         match idPath with
+          | [] -> ()
+          | id::idPath ->
+            parts id idPath [(".", 0)]
+            fprintf wr "<b>.</b>"
+
+         let isUnique item =
+           match item.Id with
+            | Some id -> 
+              match Map.tryFind id id2items with
+               | Some [_] -> true
+               | _ -> false
+            | None -> false
+
+         match items with
+          | [item] when isUnique item || pathFilter item ->
+            let link = linkName id item.Path item.Kind
+            fprintf wr "<a href=\"#%s:%s\">%s</a>"
+             "def" link (asText id)
+          | _ ->
+            let longId = String.concat "." (List.rev (id::idPath))
+            printf "Failed to resolve: %s\n" longId
+            fprintf wr "%s" (asText id)
+     
+     parts id fullIdPath ts
      fprintf wr "%s" (spaces n)
      loop ts
    | (s, n)::ts when Array.exists ((=) s.[0]) (symFirst.ToCharArray ()) ->
@@ -266,7 +284,7 @@ let printTokens wr id2items space inSection toSection linkId path kind ts =
    | (t, n)::ts ->
      fprintf wr "%s%s" (asText t) (spaces n) ; loop ts
    | [] ->
-     ()     
+     ()
   loop ts
 
 let printDesc wr item id2items (lines: list<string>) =
