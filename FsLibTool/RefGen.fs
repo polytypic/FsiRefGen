@@ -16,15 +16,16 @@ let keywords =
   [|":>"; "->"; "="; 
     "[<"; ">]"; "[|"; "|]"; "?<-"; "??"; "?"; ":?>"; ":?"; ":>"; "::"; ":="; ":";
     "abstract";
+    "class";
     "default"; "do!"; "downto"; "do";
-    "else";
+    "else"; "end"; "exception";
     "false"; "finally"; "for"; "fun";
-    "if"; "inline"; "in";
+    "if"; "inline"; "in"; "interface";
     "let!"; "let";
-    "match"; "member"; "module";
+    "match"; "member"; "module"; "mutable";
     "namespace"; "new";
     "rec"; "return!"; "return";
-    "static";
+    "static"; "struct";
     "then"; "to"; "true"; "try"; "type";
     "upcast"; "use!"; "use";
     "val";
@@ -136,14 +137,15 @@ let rec itemize ls =
          match tokens with
           | T("namespace"|"module" as kind)::Id (id, _, path, []) ->
             nest docs attrs kind (String.concat "." (List.rev (id::path))) indent tokens
-          | T("type" as kind) as t::Attr (attr, (T id::T"="::_ as ts)) ->
+          | T("type" as kind) as t::Attr (attr, (T id::_ as ts)) ->
             nest docs (attr::attrs) kind id i (t::ts)
-          | T("type" as kind) as t::Attr (attr, ([T id] as ts)) ->
-            nest docs (attr::attrs) kind id i (t::ts)
+          | T("exception" as kind) as t::(T id::_ as ts) ->
+            nest docs (attrs) kind id i (t::ts)
           | T"static"::T"member"::T id::T":"::_ ->
             nest docs attrs "static member" id i tokens
           | T"static"::T"member"::T "("::T id::T ")"::T":"::_ ->
             nest docs attrs "static member" id i tokens
+          | T("val" as kind)::T("mutable")::T id::T":"::_
           | T("val" as kind)::T"("::T id::T")"::T":"::_
           | T("module"|"namespace" as kind)::T id::[T"="]
           | T("abstract"|"default"|"member"|"val" as kind)::T id::T":"::_
@@ -154,7 +156,7 @@ let rec itemize ls =
             nest docs attrs "field" id i tokens
           | Attr (attr, []) ->
             outside indent path items docs (attr::attrs) lines
-          | T("{"|"}"|"->")::_ ->
+          | T("{"|"}"|"->"|"*"|"inherit"|"end")::_ ->
             outside indent path ({empty with Tokens = tokens; Indent = i}::items) [] [] lines
           | _ ->
             failwithf "Unrecognized: %A" tokens
@@ -450,6 +452,3 @@ let generate wr title path =
   printDescription wr id2items model
   fprintf wr "</td></tr></table></body>\n"
   fprintf wr "</html>\n"
-
-// do use wr = new StreamWriter ("PPrint.html")
-//   generate wr "PPrint" "../Libs/PPrint"

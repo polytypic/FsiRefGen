@@ -7,6 +7,11 @@ type LibInfo = {
     DocFile: string
   }
 
+let genDocs lib =
+  printfn "Generating reference for %s." lib.LibName
+  use wr = new StreamWriter (lib.DocFile)
+  RefGen.generate wr lib.LibName lib.LibDir
+
 [<EntryPoint>]
 let main argv =
   let libs =
@@ -21,5 +26,6 @@ let main argv =
         LibName = libName
         DocFile = docFile})
     |> List.ofSeq
-  printf "%A" libs
+  for lib in libs do
+    genDocs lib
   0
