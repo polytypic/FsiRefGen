@@ -156,7 +156,7 @@ let rec itemize ls =
             nest path docs attrs "field" id i tokens
           | Attr (attr, []) ->
             outside indent path items docs (attr::attrs) lines
-          | T("{"|"}"|"->"|"*"|"inherit"|"end")::_ ->
+          | T("{"|"}"|"->"|"*"|"inherit"|"interface"|"end")::_ ->
             outside indent path ({empty with Tokens = tokens; Indent = i}::items) [] [] lines
           | _ ->
             failwithf "Unrecognized: %A" tokens
