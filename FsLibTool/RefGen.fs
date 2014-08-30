@@ -152,6 +152,7 @@ let rec itemize ls =
           | T("type" as kind)::T id::([]|T"<"::_|T":>"::_|T"="::_)
           | T("new" as id as kind)::T":"::_ ->
             nest path docs attrs kind id i tokens
+          | T("mutable")::T id::T":"::_
           | T id::T":"::_ ->
             nest path docs attrs "field" id i tokens
           | Attr (attr, []) ->
