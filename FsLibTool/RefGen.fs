@@ -149,7 +149,7 @@ let rec itemize ls =
           | T("val" as kind)::T"("::T id::T")"::T":"::_
           | T("module"|"namespace" as kind)::T id::[T"="]
           | T("abstract"|"default"|"member"|"val" as kind)::T id::T":"::_
-          | T("type" as kind)::T id::([]|T"<"::_|T":>"::_|T"="::_)
+          | T("type" as kind)::T id::([]|T"<"::_|T":>"::_|T"="::_|T"with"::_)
           | T("new" as id as kind)::T":"::_ ->
             nest path docs attrs kind id i tokens
           | T("mutable")::T id::T":"::_
@@ -208,7 +208,7 @@ let printTokens wr id2items space inSection toSection linkId path kind ts =
          let id = match inSection with
                    | None -> " "
                    | Some inSection -> sprintf " id=\"%s:%s\" " inSection link
-         fprintf wr "<a%shref=\"#%s:%s\">%s</a>%s" id toSection link text (spaces n)
+         fprintf wr "<a%shref=\"#%s:%s\">%s</a>" id toSection link text
        else
          let kindsFilter =
            match ts with
