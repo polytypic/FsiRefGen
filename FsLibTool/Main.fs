@@ -21,7 +21,7 @@ let main argv =
        |> Seq.isEmpty |> not)
     |> Seq.map (fun libDir ->
        let libName = Path.GetFileName libDir
-       let docFile = "Docs\\gh-pages\\" + libName + ".html"
+       let docFile = "Docs/gh-pages/" + libName + ".html"
        {LibDir = libDir
         LibName = libName
         DocFile = docFile})
