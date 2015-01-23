@@ -289,6 +289,10 @@ let printTokens wr id2items space inSection toSection linkId path kind ts =
   loop ts
 
 let printDesc wr item id2items (lines: list<string>) =
+  let path =
+    match (item.Path, item.Id) with
+     | ([], Some id) -> [id]
+     | (path, _) -> path
   let rec paras = function
     | (empty: string)::lines when "" = empty.Trim () ->
       paras lines
@@ -303,7 +307,7 @@ let printDesc wr item id2items (lines: list<string>) =
     | text::lines when text.StartsWith "> " ->
       let code = text.Substring 2
       fprintf wr "%s" (String.replicate (indentOf code) " ")
-      printTokens wr id2items " " None "def" None item.Path None (tokenize code)
+      printTokens wr id2items " " None "def" None path None (tokenize code)
       fprintf wr "\n"
       inPre lines
     | lines ->
@@ -331,7 +335,7 @@ let printDesc wr item id2items (lines: list<string>) =
   and inCode esc i0 i = function
     | (text : string)::lines when i < text.Length ->
       if esc = text.[i] then
-        printTokens wr id2items "&nbsp;" None "def" None item.Path None (tokenize (text.Substring (i0, i-i0)))
+        printTokens wr id2items "&nbsp;" None "def" None path None (tokenize (text.Substring (i0, i-i0)))
         fprintf wr "</code>"
         inPara (i+1) (text::lines)
       else
