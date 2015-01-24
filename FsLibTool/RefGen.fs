@@ -19,7 +19,7 @@ let keywords =
     "class";
     "default"; "do!"; "downto"; "do";
     "else"; "end"; "exception";
-    "false"; "finally"; "for"; "fun";
+    "false"; "finally"; "for"; "fun"; "function";
     "if"; "inline"; "in"; "interface";
     "let!"; "let";
     "match"; "member"; "module"; "mutable";
