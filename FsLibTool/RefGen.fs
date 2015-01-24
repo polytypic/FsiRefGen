@@ -24,6 +24,7 @@ let keywords =
     "let!"; "let";
     "match"; "member"; "module"; "mutable";
     "namespace"; "new";
+    "open"; "override";
     "rec"; "return!"; "return";
     "static"; "struct";
     "then"; "to"; "true"; "try"; "type";
