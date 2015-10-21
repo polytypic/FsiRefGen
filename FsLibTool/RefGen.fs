@@ -14,7 +14,7 @@ let chars (s: string) = s.ToCharArray () |> Array.map string |> strings
 
 let keywords =
   [|":>"; "->"; "="; 
-    "[<"; ">]"; "[|"; "|]"; "?<-"; "??"; "?"; ":?>"; ":?"; ":>"; "::"; ":="; ":";
+    "[<"; ">]"; "(|" ; "|)"; "[|"; "|]"; "?<-"; "??"; "?"; ":?>"; ":?"; ":>"; "::"; ":="; ":";
     "abstract";
     "class";
     "default"; "do!"; "downto"; "do";
@@ -146,7 +146,8 @@ let rec itemize ls =
             nest path docs attrs "static member" id i tokens
           | T"static"::T"member"::T "("::T id::T ")"::T":"::_ ->
             nest path docs attrs "static member" id i tokens
-          | T("val" as kind)::T("mutable")::T id::T":"::_
+          | T("val" as kind)::T"(|"::T id::T"|)"::T":"::_
+          | T("val" as kind)::T"mutable"::T id::T":"::_
           | T("val" as kind)::T"("::T id::T")"::T":"::_
           | T("module"|"namespace" as kind)::T id::[T"="]
           | T("abstract"|"default"|"member"|"val" as kind)::T id::(T":"::_|T"<"::_)
