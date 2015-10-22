@@ -350,6 +350,17 @@ let printDesc wr item id2items (lines: list<string>) =
       failwithf "Failed to escape text properly: %A" lines
   paras lines
 
+let hasDocs item =
+  not <| List.isEmpty item.Doc
+
+let rec bodyHasDocs item =
+  item.Body
+  |> List.exists (fun item ->
+     hasDocs item || bodyHasDocs item)
+
+let needsSummary item =
+  hasDocs item || bodyHasDocs item
+
 let rec printSummary wr id2items deep inSection toSection drop item =
   let indent = max (item.Indent - drop) 0
   let prefix = String.replicate indent " "
@@ -379,19 +390,18 @@ let rec printDescription wr id2items item =
   if Option.isSome item.Id &&
      (not (List.isEmpty item.Doc) ||
       not (List.isEmpty item.Body)) then
-    fprintf wr "<pre>"
-    printSummary wr id2items false (Some "def") "dec" item.Indent item
-    fprintf wr "</pre>\n"
-    fprintf wr "<div class=\"nested\">"
-    match item.Doc with
-     | [] -> ()
-     | lines -> printDesc wr item id2items lines
-    match item.Body with
-     | [] -> ()
-     | body ->
-       body
-       |> Seq.iter (printDescription wr id2items)
-    fprintf wr "</div>\n"
+    if needsSummary item then
+      fprintf wr "<pre>"
+      printSummary wr id2items false (Some "def") "dec" item.Indent item
+      fprintf wr "</pre>\n"
+      fprintf wr "<div class=\"nested\">"
+      match item.Doc with
+       | [] -> ()
+       | lines -> printDesc wr item id2items lines
+      if item.Body |> List.exists (fun item -> List.isEmpty item.Doc |> not)
+      then item.Body
+           |> Seq.iter (printDescription wr id2items)
+      fprintf wr "</div>\n"
 
 let generate wr title path =
   let units =
