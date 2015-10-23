@@ -140,6 +140,8 @@ let rec itemize ls =
             nest path docs attrs kind id indent tokens
           | T("type" as kind) as t::Attr (attr, (T id::_ as ts)) ->
             nest path docs (attr::attrs) kind id i (t::ts)
+          | T"and" as t::Attr (attr, (T id::_ as ts)) ->
+            nest path docs attrs "type" id i tokens
           | T("exception" as kind) as t::(T id::_ as ts) ->
             nest path docs (attrs) kind id i (t::ts)
           | T"static"::T"member"::T id::T":"::_ ->
