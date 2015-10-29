@@ -148,6 +148,8 @@ let rec itemize ls =
             nest path docs attrs "static member" id i tokens
           | T"static"::T"member"::T "("::T id::T ")"::T":"::_ ->
             nest path docs attrs "static member" id i tokens
+          | T("and" as kind)::T id::([]|T"<"::_|T":>"::_|T"="::_|T"with"::_) ->
+            nest path docs attrs "type" id i tokens
           | T("val" as kind)::T"(|"::T id::T"|)"::T":"::_
           | T("val" as kind)::T"mutable"::T id::T":"::_
           | T("val" as kind)::T"("::T id::T")"::T":"::_
