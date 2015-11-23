@@ -116,7 +116,8 @@ let rec itemize ls =
   let rec outside indent path items docs attrs = function
      | [] -> (List.rev items, [])
      | (i, text: string)::lines ->
-       if text.Length = 0 || List.exists text.StartsWith ["#"; "// "; "////"; "open "] then
+       if text.Length = 0
+          || List.exists text.StartsWith ["#"; "// "; "////"; "open "] then
          outside indent path items docs attrs lines
        elif i <= indent then
          (List.rev items, (i, text)::lines)
@@ -150,9 +151,9 @@ let rec itemize ls =
             nest path docs attrs "static member" id i tokens
           | T("and" as kind)::T id::([]|T"<"::_|T":>"::_|T"="::_|T"with"::_) ->
             nest path docs attrs "type" id i tokens
-          | T("val" as kind)::T"(|"::T id::T"|)"::T":"::_
           | T("val" as kind)::T"mutable"::T id::T":"::_
           | T("val" as kind)::T"("::T id::T")"::T":"::_
+          | T("val" as kind)::T"(|"::T id::T"|)"::T":"::_
           | T("module"|"namespace" as kind)::T id::[T"="]
           | T("abstract"|"default"|"member"|"val" as kind)::T id::(T":"::_|T"<"::_)
           | T("type" as kind)::T id::([]|T"<"::_|T":>"::_|T"="::_|T"with"::_)
@@ -362,8 +363,12 @@ let rec bodyHasDocs item =
   |> List.exists (fun item ->
      hasDocs item || bodyHasDocs item)
 
+let isObsolete (item: Item) =
+  item.Attr
+  |> List.exists (List.exists (fst >> (=) "Obsolete"))
+
 let needsSummary item =
-  hasDocs item || bodyHasDocs item
+  not (isObsolete item) && (hasDocs item || bodyHasDocs item)
 
 let rec printSummary wr id2items deep inSection toSection drop item =
   let indent = max (item.Indent - drop) 0
@@ -380,6 +385,7 @@ let rec printSummary wr id2items deep inSection toSection drop item =
   fprintf wr "\n"
   if deep then
     item.Body
+    |> Seq.filter (isObsolete >> not)
     |> Seq.iter (printSummary wr id2items deep inSection toSection drop)
   else
     if not (List.exists (fun item -> Option.isSome item.Id) item.Body) then
@@ -483,6 +489,7 @@ let generate wr title path =
   printTokens wr id2items " " (Some "dec") "def" model.Id model.Path model.Kind model.Tokens
   fprintf wr "</pre>\n"
   model.Body
+  |> Seq.filter (isObsolete >> not)
   |> Seq.iter (fun item ->
      fprintf wr "<pre>"
      printSummary wr id2items true (Some "dec") "def" 0 item
