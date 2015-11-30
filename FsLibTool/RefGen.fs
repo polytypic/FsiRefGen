@@ -15,12 +15,12 @@ let chars (s: string) = s.ToCharArray () |> Array.map string |> strings
 let keywords =
   [|":>"; "->"; "="; 
     "[<"; ">]"; "(|" ; "|)"; "[|"; "|]"; "?<-"; "??"; "?"; ":?>"; ":?"; ":>"; "::"; ":="; ":";
-    "abstract";
+    "abstract"; "and";
     "class";
     "default"; "do!"; "downto"; "do";
     "else"; "end"; "exception";
     "false"; "finally"; "for"; "fun"; "function";
-    "if"; "inline"; "in"; "interface";
+    "if"; "inherit"; "inline"; "in"; "interface";
     "let!"; "let";
     "match"; "member"; "module"; "mutable";
     "namespace"; "new";
