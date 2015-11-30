@@ -481,9 +481,7 @@ let generate wr title path =
               </style>\n"
   fprintf wr "</head>\n"
   fprintf wr "<body><table width=\"80%%\" align=\"center\"><tr><td>\n"
-  fprintf wr "<h1>%s Library Reference</h1>\n\
-              <p>This document provides a reference manual for the %s library \
-                 and is generated from the library source code.</p>\n" title title
+  fprintf wr "<h1>%s Library Reference</h1>\n" title
   fprintf wr "<h2>Synopsis</h2>\n"
   fprintf wr "<pre>"
   printTokens wr id2items " " (Some "dec") "def" model.Id model.Path model.Kind model.Tokens
