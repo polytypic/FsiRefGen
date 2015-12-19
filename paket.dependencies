@@ -3,3 +3,4 @@ framework: net45
 
 nuget FSharp.Core 4.0.0.1
 nuget PPrint 1.4.3
+nuget NuGet.CommandLine

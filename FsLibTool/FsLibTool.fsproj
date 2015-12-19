@@ -55,6 +55,7 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Content Include="paket.references" />
+    <Compile Include="AssemblyVersionInfo.fs" />
     <None Include="App.config" />
     <Compile Include="RefGen.fs" />
     <Compile Include="Main.fs" />
