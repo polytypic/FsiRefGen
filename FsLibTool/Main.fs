@@ -14,8 +14,10 @@ let genDocs lib =
 
 [<EntryPoint>]
 let main argv =
+  let root = if argv.Length = 0 then "Libs" else argv.[0]
+
   let libs =
-    Directory.EnumerateDirectories "Libs"
+    Directory.EnumerateDirectories root
     |> Seq.filter (fun libDir ->
        Directory.EnumerateFiles (libDir, "*.fsi")
        |> Seq.isEmpty |> not)
