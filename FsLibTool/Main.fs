@@ -14,14 +14,17 @@ let genDocs lib =
 
 [<EntryPoint>]
 let main argv =
+  let root = if argv.Length = 0 then "Libs" else argv.[0]
+  let target = if argv.Length <= 1 then "Docs/gh-pages" else argv.[1]
+
   let libs =
-    Directory.EnumerateDirectories "Libs"
+    Directory.EnumerateDirectories root
     |> Seq.filter (fun libDir ->
        Directory.EnumerateFiles (libDir, "*.fsi")
        |> Seq.isEmpty |> not)
     |> Seq.map (fun libDir ->
        let libName = Path.GetFileName libDir
-       let docFile = "Docs/gh-pages/" + libName + ".html"
+       let docFile = Path.Combine(target, libName + ".html")
        {LibDir = libDir
         LibName = libName
         DocFile = docFile})
