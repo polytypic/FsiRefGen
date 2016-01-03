@@ -13,18 +13,18 @@ let genDocs lib =
   RefGen.generate wr lib.LibName lib.LibDir
 
 [<EntryPoint>]
-let main argv =
+let main _ =
   let libs =
     Directory.EnumerateDirectories "Libs"
-    |> Seq.filter (fun libDir ->
-       Directory.EnumerateFiles (libDir, "*.fsi")
-       |> Seq.isEmpty |> not)
-    |> Seq.map (fun libDir ->
-       let libName = Path.GetFileName libDir
-       let docFile = "Docs/gh-pages/" + libName + ".html"
-       {LibDir = libDir
-        LibName = libName
-        DocFile = docFile})
+    |> Seq.filter ^ fun libDir ->
+         Directory.EnumerateFiles (libDir, "*.fsi")
+         |> Seq.isEmpty |> not
+    |> Seq.map ^ fun libDir ->
+         let libName = Path.GetFileName libDir
+         let docFile = "Docs/gh-pages/" + libName + ".html"
+         {LibDir = libDir
+          LibName = libName
+          DocFile = docFile}
     |> List.ofSeq
   for lib in libs do
     genDocs lib

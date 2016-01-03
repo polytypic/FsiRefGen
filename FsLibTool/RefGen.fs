@@ -13,8 +13,8 @@ let strings ss = Array.map Regex.Escape ss |> choice
 let chars (s: string) = s.ToCharArray () |> Array.map string |> strings
 
 let keywords =
-  [|":>"; "->"; "="; 
-    "[<"; ">]"; "(|" ; "|)"; "[|"; "|]"; "?<-"; "??"; "?"; ":?>"; ":?"; ":>"; "::"; ":="; ":";
+  [|":>"; "->"; "="; "[<"; ">]"; "(|" ; "|)"; "[|"; "|]"; "?<-"; "??"; "?";
+    ":?>"; ":?"; ":>"; "::"; ":="; ":";
     "abstract"; "and";
     "class";
     "default"; "do!"; "downto"; "do";
@@ -123,6 +123,16 @@ let rec itemize ls =
          (List.rev items, (i, text)::lines)
        elif text.StartsWith "///" then
          outside indent path items (text.Substring 3::docs) attrs lines
+       elif text.StartsWith "//# " then
+         let item = {Doc = [text.Substring 4]
+                     Attr = []
+                     Kind = Some "header"
+                     Id = None
+                     Path = []
+                     Indent = i
+                     Tokens = []
+                     Body = []}
+         outside indent path (item::items) [] [] lines
        else
          let nest path docs attrs kind id indent' tokens =
             let (body, lines) = outside indent' (id::path) [] [] [] lines
@@ -141,15 +151,15 @@ let rec itemize ls =
             nest path docs attrs kind id indent tokens
           | T("type" as kind) as t::Attr (attr, (T id::_ as ts)) ->
             nest path docs (attr::attrs) kind id i (t::ts)
-          | T"and" as t::Attr (attr, (T id::_ as ts)) ->
-            nest path docs attrs "type" id i tokens
+          | T"and"::Attr (attr, (T id::_)) ->
+            nest path docs (attr::attrs) "type" id i tokens
           | T("exception" as kind) as t::(T id::_ as ts) ->
-            nest path docs (attrs) kind id i (t::ts)
+            nest path docs attrs kind id i (t::ts)
           | T"static"::T"member"::T id::T":"::_ ->
             nest path docs attrs "static member" id i tokens
           | T"static"::T"member"::T "("::T id::T ")"::T":"::_ ->
             nest path docs attrs "static member" id i tokens
-          | T("and" as kind)::T id::([]|T"<"::_|T":>"::_|T"="::_|T"with"::_) ->
+          | T"and"::T id::([]|T"<"::_|T":>"::_|T"="::_|T"with"::_) ->
             nest path docs attrs "type" id i tokens
           | T("val" as kind)::T"mutable"::T id::T":"::_
           | T("val" as kind)::T"("::T id::T")"::T":"::_
@@ -221,7 +231,7 @@ let printTokens wr id2items space inSection toSection linkId path kind ts =
            match ts with
             | T"<"::_ -> fun item -> item.Kind = Some "type"
             | T"."::_ -> fun item -> item.Kind = Some "module"
-            | _ -> fun item -> true
+            | _ -> fun _ -> true
 
          let rec cmp = function
           | ([], _) -> true
@@ -373,28 +383,30 @@ let needsSummary item =
 let rec printSummary wr id2items deep inSection toSection drop item =
   let indent = max (item.Indent - drop) 0
   let prefix = String.replicate indent " "
-  let print s = fprintf wr "%s%s\n" prefix (asText s)
-  item.Attr
-  |> Seq.iter (fun attr ->
-     fprintf wr "%s" prefix
-     printTokens wr id2items " " inSection toSection None [] None attr
-     fprintf wr "\n")
-  fprintf wr "%s" prefix
-  printTokens wr id2items " " inSection toSection
-   (match item.Doc with [] -> None | _ -> item.Id) item.Path item.Kind item.Tokens
-  fprintf wr "\n"
-  if deep then
-    item.Body
-    |> Seq.filter (isObsolete >> not)
-    |> Seq.iter (printSummary wr id2items deep inSection toSection drop)
+  if item.Kind = Some "header" then
+    fprintf wr "<h3>%s%s</h3>" prefix <| List.head item.Doc
   else
-    if not (List.exists (fun item -> Option.isSome item.Id) item.Body) then
+    item.Attr
+    |> Seq.iter ^ fun attr ->
+         fprintf wr "%s" prefix
+         printTokens wr id2items " " inSection toSection None [] None attr
+         fprintf wr "\n"
+    fprintf wr "%s" prefix
+    printTokens wr id2items " " inSection toSection
+     (match item.Doc with [] -> None | _ -> item.Id) item.Path item.Kind item.Tokens
+    fprintf wr "\n"
+    if deep then
       item.Body
-      |> Seq.filter (fun item ->
-         match item.Tokens with
-          | T("{"|"}")::_ -> false
-          | _ -> true)
-      |> Seq.iter (printSummary wr id2items false inSection toSection drop)
+      |> Seq.filter (isObsolete >> not)
+      |> Seq.iter (printSummary wr id2items deep inSection toSection drop)
+    else
+      if not (List.exists (fun item -> Option.isSome item.Id) item.Body) then
+        item.Body
+        |> Seq.filter ^ fun item ->
+             match item.Tokens with
+              | T("{"|"}")::_ -> false
+              | _ -> true
+        |> Seq.iter (printSummary wr id2items false inSection toSection drop)
 
 let rec printDescription wr id2items item =
   if Option.isSome item.Id &&
@@ -421,14 +433,13 @@ let generate wr title path =
   let model =
     let collect field =
       units
-      |> List.collect (fun items ->
-         items |> List.collect field)
+      |> List.collect (List.collect field)
     match units with
      | (unit::_)::_ ->
        {unit with
-         Doc = collect (fun item -> item.Doc)
-         Attr = collect (fun item -> item.Attr)
-         Body = collect (fun item -> item.Body)}
+         Doc = collect ^ fun item -> item.Doc
+         Attr = collect ^ fun item -> item.Attr
+         Body = collect ^ fun item -> item.Body}
      | _ -> failwith "Expected some!"
   let id2items =
     let rec addItems id2items item =
@@ -449,7 +460,7 @@ let generate wr title path =
           id2items
           item.Body
     addItems Map.empty model
-  fprintf wr "<!DOCTYPE html>\n\
+  fprintf wr "<!doctype html>\n\
               <html>\n"
   fprintf wr "<head>\n"
   fprintf wr "<title>%s Library Reference</title>\n" title
@@ -488,10 +499,10 @@ let generate wr title path =
   fprintf wr "</pre>\n"
   model.Body
   |> Seq.filter (isObsolete >> not)
-  |> Seq.iter (fun item ->
-     fprintf wr "<pre>"
-     printSummary wr id2items true (Some "dec") "def" 0 item
-     fprintf wr "</pre>\n")
+  |> Seq.iter ^ fun item ->
+       fprintf wr "<pre>"
+       printSummary wr id2items true (Some "dec") "def" 0 item
+       fprintf wr "</pre>\n"
   fprintf wr "<h2>Description</h2>\n"
   printDescription wr id2items model
   fprintf wr "</td></tr></table></body>\n"
