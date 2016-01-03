@@ -384,7 +384,7 @@ let rec printSummary wr id2items deep inSection toSection drop item =
   let indent = max (item.Indent - drop) 0
   let prefix = String.replicate indent " "
   if item.Kind = Some "header" then
-    fprintf wr "<h3>%s%s</h3>" prefix <| List.head item.Doc
+    fprintf wr "%s<h3>%s</h3>\n" prefix <| List.head item.Doc
   else
     item.Attr
     |> Seq.iter ^ fun attr ->
@@ -473,6 +473,10 @@ let generate wr title path =
                 background: #f7f7f7;\n\
                 font-family: \"Lucida Console\", Monaco, monospace;\n\
                 font-size: 72%%;\n\
+              }\n\
+              pre h3 {\n\
+                display: inline-block;\n\
+                margin: 1em 0em 0.5em 0em;\n\
               }\n\
               code {\n\
                 border: 1px solid #e0e0e0;\n\
