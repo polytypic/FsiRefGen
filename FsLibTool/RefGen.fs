@@ -3,6 +3,7 @@ module RefGen
 open System
 open System.Collections.Generic
 open System.IO
+open System.Net
 open System.Text
 open System.Text.RegularExpressions
 
@@ -196,6 +197,7 @@ let asText (s: string) =
 let linkName id path kind =
    let prefix = match kind with None -> "" | Some kind -> kind + " "
    asText (prefix + String.concat "." (List.rev (id::path)))
+   |> Uri.EscapeDataString
 
 let printTokens wr id2items space inSection toSection linkId path kind ts =
   let linked = ref (Option.isNone linkId)
