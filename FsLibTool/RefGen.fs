@@ -118,10 +118,20 @@ let rec itemize ls =
      | [] -> (List.rev items, [])
      | (i, text: string)::lines ->
        if text.Length = 0
-          || List.exists text.StartsWith ["#"; "// "; "////"; "open "] then
+          || List.exists text.StartsWith ["#"; "// "; "open "] then
          outside indent path items docs attrs lines
        elif i <= indent then
          (List.rev items, (i, text)::lines)
+       elif text.StartsWith "////" then
+         let item = {Doc = [text.Substring 4]
+                     Attr = []
+                     Kind = Some "spacer"
+                     Id = None
+                     Path = []
+                     Indent = i
+                     Tokens = []
+                     Body = []}
+         outside indent path (item::items) [] [] lines
        elif text.StartsWith "///" then
          outside indent path items (text.Substring 3::docs) attrs lines
        elif text.StartsWith "//# " then
@@ -386,8 +396,13 @@ let rec printSummary wr id2items deep inSection toSection drop item =
   let indent = max (item.Indent - drop) 0
   let prefix = String.replicate indent " "
   if item.Kind = Some "header" then
-    fprintf wr "%s<h3>%s</h3>\n" prefix <| List.head item.Doc
+    fprintfn wr """%s<span class="h3">%s</span>""" prefix (List.head item.Doc |> asText)
+  elif item.Kind = Some "spacer" then
+    fprintf wr "</pre>\n<pre>"
   else
+    let spacing = deep && (item.Kind = Some "module" || item.Kind = Some "type")
+    if spacing then
+      fprintf wr """<span class="spacing">"""
     item.Attr
     |> Seq.iter ^ fun attr ->
          fprintf wr "%s" prefix
@@ -409,6 +424,8 @@ let rec printSummary wr id2items deep inSection toSection drop item =
               | T("{"|"}")::_ -> false
               | _ -> true
         |> Seq.iter (printSummary wr id2items false inSection toSection drop)
+    if spacing then
+      fprintf wr "</span>"
 
 let rec printDescription wr id2items item =
   if Option.isSome item.Id &&
@@ -466,49 +483,55 @@ let generate wr title path =
               <html>\n"
   fprintf wr "<head>\n"
   fprintf wr "<title>%s Library Reference</title>\n" title
-  fprintf wr "<style>\n\
-              pre {\n\
-                border: 1px solid #e0e0e0;\n\
-                border-radius: 3px;\n\
-                padding: 5px;\n\
-                line-height: 160%%;\n\
-                background: #f7f7f7;\n\
-                font-family: \"Lucida Console\", Monaco, monospace;\n\
-                font-size: 72%%;\n\
-              }\n\
-              pre h3 {\n\
-                display: inline-block;\n\
-                margin: 1em 0em 0.5em 0em;\n\
-              }\n\
-              code {\n\
-                border: 1px solid #e0e0e0;\n\
-                border-radius: 3px;\n\
-                padding: 2px;\n\
-                background: #f7f7f7;\n\
-                font-family: \"Lucida Console\", Monaco, monospace;\n\
-                font-size: 72%%;\n\
-              }\n\
-              div.nested {\n\
-                padding-left: 1.5em;\n\
-              }\n\
-              a {\n\
-                text-decoration: none;\n\
-                font-weight: bold;\n\
-              }\n\
-              </style>\n"
+  fprintfn wr "%s" """<style>
+pre {
+  border: 1px solid #e0e0e0;
+  border-radius: 3px;
+  padding: 5px;
+  background: #f7f7f7;
+  line-height: 160%;
+  font-family: "Lucida Console", Monaco, monospace;
+  font-size: 72%;
+}
+code {
+  border: 1px solid #e0e0e0;
+  border-radius: 3px;
+  padding: 2px;
+  background: #f7f7f7;
+  line-height: 160%;
+  font-family: "Lucida Console", Monaco, monospace;
+  font-size: 72%;
+}
+span.h3 {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 1.17em;
+  font-family: inherit;
+  margin: 0.75em 0em 0.5em 0em;
+}
+span.spacing {
+  display: inherit;
+  margin: 0.5em 0em 0.5em 0em;
+}
+div.nested {
+  padding-left: 1.5em;
+}
+a {
+  text-decoration: none;
+  font-weight: bold;
+}
+</style>"""
   fprintf wr "</head>\n"
   fprintf wr "<body><table width=\"80%%\" align=\"center\"><tr><td>\n"
   fprintf wr "<h1>%s Library Reference</h1>\n" title
   fprintf wr "<h2>Synopsis</h2>\n"
   fprintf wr "<pre>"
   printTokens wr id2items " " (Some "dec") "def" model.Id model.Path model.Kind model.Tokens
-  fprintf wr "</pre>\n"
+  fprintf wr "\n"
   model.Body
   |> Seq.filter (isObsolete >> not)
-  |> Seq.iter ^ fun item ->
-       fprintf wr "<pre>"
-       printSummary wr id2items true (Some "dec") "def" 0 item
-       fprintf wr "</pre>\n"
+  |> Seq.iter ^ printSummary wr id2items true (Some "dec") "def" 0
+  fprintf wr "</pre>\n"
   fprintf wr "<h2>Description</h2>\n"
   printDescription wr id2items model
   fprintf wr "</td></tr></table></body>\n"
