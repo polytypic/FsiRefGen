@@ -207,7 +207,6 @@ let asText (s: string) =
 let linkName id path kind =
    let prefix = match kind with None -> "" | Some kind -> kind + " "
    asText (prefix + String.concat "." (List.rev (id::path)))
-   |> Uri.EscapeDataString
 
 let printTokens wr id2items space spaced inSection toSection linkId path kind ts =
   let linked = ref (Option.isNone linkId)
@@ -240,7 +239,7 @@ let printTokens wr id2items space spaced inSection toSection linkId path kind ts
          let id = match inSection with
                    | None -> " "
                    | Some inSection -> sprintf " id=\"%s:%s\" " inSection link
-         fprintf wr "<a%shref=\"#%s:%s\">%s</a>" id toSection link text
+         fprintf wr "<a%shref=\"#%s:%s\">%s</a>" id toSection (Uri.EscapeDataString link) text
        else
          let kindsFilter =
            match ts with
@@ -303,7 +302,7 @@ let printTokens wr id2items space spaced inSection toSection linkId path kind ts
           | [item] when isUnique item || pathFilter item ->
             let link = linkName id item.Path item.Kind
             fprintf wr "<a href=\"#%s:%s\">%s</a>"
-             "def" link (asText id)
+             "def" (Uri.EscapeDataString link) (asText id)
           | _ ->
             let longId = String.concat "." (List.rev (id::idPath))
             printf "Failed to resolve: %s\n" longId
