@@ -209,9 +209,12 @@ let linkName id path kind =
    asText (prefix + String.concat "." (List.rev (id::path)))
    |> Uri.EscapeDataString
 
-let printTokens wr id2items space inSection toSection linkId path kind ts =
+let printTokens wr id2items space spaced inSection toSection linkId path kind ts =
   let linked = ref (Option.isNone linkId)
-  let spaces n = String.replicate n space
+  let spaces n =
+    if n = 0 then ""
+    elif spaced then String.replicate n space
+    else space
   let rec loop = function
    | (k, n)::ts when keywordSet.Contains k ->
      if k = ":" || k = "->" then linked := true
@@ -336,7 +339,7 @@ let printDesc wr item id2items (lines: list<string>) =
     | text::lines when text.StartsWith "> " ->
       let code = text.Substring 2
       fprintf wr "%s" (String.replicate (indentOf code) " ")
-      printTokens wr id2items " " None "def" None path None (tokenize code)
+      printTokens wr id2items " " true None "def" None path None (tokenize code)
       fprintf wr "\n"
       inPre lines
     | lines ->
@@ -364,13 +367,13 @@ let printDesc wr item id2items (lines: list<string>) =
   and inCode esc i0 i = function
     | (text : string)::lines when i < text.Length ->
       if esc = text.[i] then
-        printTokens wr id2items "&nbsp;" None "def" None path None (tokenize (text.Substring (i0, i-i0)))
+        printTokens wr id2items "&nbsp;" true None "def" None path None (tokenize (text.Substring (i0, i-i0)))
         fprintf wr "</code>"
         inPara (i+1) (text::lines)
       else
         inCode esc i0 (i+1) (text::lines)
     | text::lines when i = text.Length ->
-      printTokens wr id2items "&nbsp;" None "def" None item.Path None (tokenize (text.Substring (i0, i-i0)))
+      printTokens wr id2items "&nbsp;" true None "def" None item.Path None (tokenize (text.Substring (i0, i-i0)))
       fprintf wr "&nbsp;"
       inCode esc 0 0 lines
     | lines ->
@@ -406,10 +409,10 @@ let rec printSummary wr id2items deep inSection toSection drop item =
     item.Attr
     |> Seq.iter ^ fun attr ->
          fprintf wr "%s" prefix
-         printTokens wr id2items " " inSection toSection None [] None attr
+         printTokens wr id2items " " false inSection toSection None [] None attr
          fprintf wr "\n"
     fprintf wr "%s" prefix
-    printTokens wr id2items " " inSection toSection
+    printTokens wr id2items " " deep inSection toSection
      (match item.Doc with [] -> None | _ -> item.Id) item.Path item.Kind item.Tokens
     fprintf wr "\n"
     if deep then
@@ -526,7 +529,7 @@ a {
   fprintf wr "<h1>%s Library Reference</h1>\n" title
   fprintf wr "<h2>Synopsis</h2>\n"
   fprintf wr "<pre>"
-  printTokens wr id2items " " (Some "dec") "def" model.Id model.Path model.Kind model.Tokens
+  printTokens wr id2items " " false (Some "dec") "def" model.Id model.Path model.Kind model.Tokens
   fprintf wr "\n"
   model.Body
   |> Seq.filter (isObsolete >> not)
