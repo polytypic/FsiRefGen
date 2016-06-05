@@ -218,9 +218,9 @@ let printTokens wr id2items space spaced inSection toSection linkId path kind ts
   let rec loop = function
    | (k, n)::ts when keywordSet.Contains k ->
      if k = ":" || k = "->" then linked := true
-     fprintf wr "<b>%s</b>%s" (asText k) (spaces n) ; loop ts
+     fprintf wr "%s%s" (asText k) (spaces n) ; loop ts
    | ("'", _)::(t, n)::ts ->
-     fprintf wr "<i>'%s</i>%s" (asText t) (spaces n) ; loop ts
+     fprintf wr "'%s%s" (asText t) (spaces n) ; loop ts
    | Id (id, n, fullIdPath, ts)
        when Option.isSome (Map.tryFind id id2items)
          && (id <> "unit" || id = "unit" && not (!linked)) ->
@@ -233,7 +233,7 @@ let printTokens wr id2items space spaced inSection toSection linkId path kind ts
           | [] -> ()
           | id::idPath ->
             parts id idPath [(".", 0)]
-            fprintf wr "<b>.</b>"
+            fprintf wr "."
 
          let text = asText id
          let link = linkName id path kind
@@ -289,7 +289,7 @@ let printTokens wr id2items space spaced inSection toSection linkId path kind ts
           | [] -> ()
           | id::idPath ->
             parts id idPath [(".", 0)]
-            fprintf wr "<b>.</b>"
+            fprintf wr "."
 
          let isUnique item =
            match item.Id with
@@ -313,7 +313,7 @@ let printTokens wr id2items space spaced inSection toSection linkId path kind ts
      fprintf wr "%s" (spaces n)
      loop ts
    | (s, n)::ts when Array.exists ((=) s.[0]) (symFirst.ToCharArray ()) ->
-     fprintf wr "<b>%s</b>%s" (asText s) (spaces n) ; loop ts
+     fprintf wr "%s%s" (asText s) (spaces n) ; loop ts
    | (t, n)::ts ->
      fprintf wr "%s%s" (asText t) (spaces n) ; loop ts
    | [] ->
@@ -329,7 +329,7 @@ let printDesc wr item id2items (lines: list<string>) =
     | (empty: string)::lines when "" = empty.Trim () ->
       paras lines
     | code::lines when code.StartsWith ">" ->
-      fprintf wr "<pre>"
+      fprintf wr "<pre><code class=\"fsharp\">"
       inPre (code::lines)
     | text::lines ->
       fprintf wr "<p>"
@@ -343,19 +343,19 @@ let printDesc wr item id2items (lines: list<string>) =
       fprintf wr "\n"
       inPre lines
     | lines ->
-      fprintf wr "</pre>"
+      fprintf wr "</code></pre>"
       paras lines
   and inPara i = function
     | (empty: string)::lines when i=0 && "" = empty.Trim () ->
       fprintf wr "</p>"
       paras lines
     | code::lines when i=0 && code.StartsWith "> " ->
-      fprintf wr "</p>\n<pre>"
+      fprintf wr "</p>\n<pre><code class=\"fsharp\">"
       inPre (code::lines)
     | (text: string)::lines when i < text.Length ->
       match text.[i] with
        | '`' ->
-         fprintf wr "<code>"
+         fprintf wr """<code class="fsharp">"""
          inCode text.[i] (i+1) (i+1) (text::lines)
        | c ->
          fprintf wr "%c" c
@@ -399,9 +399,9 @@ let rec printSummary wr id2items deep inSection toSection drop item =
   let indent = max (item.Indent - drop) 0
   let prefix = String.replicate indent " "
   if item.Kind = Some "header" then
-    fprintfn wr """%s<span class="h3">%s</span>""" prefix (List.head item.Doc |> asText)
+    fprintfn wr """%s<span class="h3">// %s</span>""" prefix (List.head item.Doc |> asText)
   elif item.Kind = Some "spacer" then
-    fprintf wr "</pre>\n<pre>"
+    fprintf wr "</code></pre>\n<pre><code class=\"fsharp\">"
   else
     let spacing = deep && (item.Kind = Some "module" || item.Kind = Some "type")
     if spacing then
@@ -435,9 +435,9 @@ let rec printDescription wr id2items item =
      (not (List.isEmpty item.Doc) ||
       not (List.isEmpty item.Body)) then
     if needsSummary item then
-      fprintf wr "<pre>"
+      fprintf wr "<pre><code class=\"fsharp\">"
       printSummary wr id2items false (Some "def") "dec" item.Indent item
-      fprintf wr "</pre>\n"
+      fprintf wr "</code></pre>\n"
       fprintf wr "<div class=\"nested\">"
       match item.Doc with
        | [] -> ()
@@ -482,34 +482,34 @@ let generate wr title path =
           id2items
           item.Body
     addItems Map.empty model
-  fprintf wr "<!doctype html>\n\
-              <html>\n"
-  fprintf wr "<head>\n"
-  fprintf wr "<title>%s Library Reference</title>\n" title
+  fprintf wr "%s" """<!doctype html>
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/fsharp.min.js"></script>
+<script>
+$(document).ready(function() {
+  $('code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+</script>
+"""
+  fprintfn wr "<title>%s Library Reference</title>" title
   fprintfn wr "%s" """<style>
-pre {
-  border: 1px solid #e0e0e0;
-  border-radius: 3px;
-  padding: 5px;
-  background: #f7f7f7;
-  line-height: 160%;
-  font-family: "Lucida Console", Monaco, monospace;
-  font-size: 72%;
+p > code.hljs {
+  display: inline;
+  padding: 1px;
 }
 code {
-  border: 1px solid #e0e0e0;
-  border-radius: 3px;
-  padding: 2px;
-  background: #f7f7f7;
-  line-height: 160%;
   font-family: "Lucida Console", Monaco, monospace;
   font-size: 72%;
+  border-radius: 3px;
 }
 span.h3 {
   display: inline-block;
-  font-weight: bold;
-  font-size: 1.17em;
-  font-family: inherit;
   margin: 0.75em 0em 0.5em 0em;
 }
 span.spacing {
@@ -523,18 +523,18 @@ a {
   text-decoration: none;
   font-weight: bold;
 }
-</style>"""
-  fprintf wr "</head>\n"
-  fprintf wr "<body><table width=\"80%%\" align=\"center\"><tr><td>\n"
-  fprintf wr "<h1>%s Library Reference</h1>\n" title
-  fprintf wr "<h2>Synopsis</h2>\n"
-  fprintf wr "<pre>"
+</style>
+</head>
+<body><table width="80%" align="center"><tr><td>"""
+  fprintfn wr "<h1>%s Library Reference</h1>" title
+  fprintfn wr "<h2>Synopsis</h2>"
+  fprintf wr "<pre><code class=\"fsharp\">"
   printTokens wr id2items " " false (Some "dec") "def" model.Id model.Path model.Kind model.Tokens
   fprintf wr "\n"
   model.Body
   |> Seq.filter (isObsolete >> not)
   |> Seq.iter ^ printSummary wr id2items true (Some "dec") "def" 0
-  fprintf wr "</pre>\n"
+  fprintf wr "</code></pre>\n"
   fprintf wr "<h2>Description</h2>\n"
   printDescription wr id2items model
   fprintf wr "</td></tr></table></body>\n"
