@@ -331,7 +331,7 @@ let printDesc wr item id2items (lines: list<string>) =
     | (empty: string)::lines when "" = empty.Trim () ->
       paras lines
     | code::lines when code.StartsWith ">" ->
-      fprintf wr "<pre><code class=\"fsharp\">"
+      fprintf wr "<pre><code class=\"fsharp hljs\">"
       inPre (code::lines)
     | text::lines ->
       fprintf wr "<p>"
@@ -345,19 +345,19 @@ let printDesc wr item id2items (lines: list<string>) =
       fprintf wr "\n"
       inPre lines
     | lines ->
-      fprintf wr "</code></pre>"
+      fprintf wr "</code></pre>\n"
       paras lines
   and inPara i = function
     | (empty: string)::lines when i=0 && "" = empty.Trim () ->
-      fprintf wr "</p>"
+      fprintf wr "</p>\n"
       paras lines
     | code::lines when i=0 && code.StartsWith "> " ->
-      fprintf wr "</p>\n<pre><code class=\"fsharp\">"
+      fprintf wr "</p>\n<pre><code class=\"fsharp hljs\">"
       inPre (code::lines)
     | (text: string)::lines when i < text.Length ->
       match text.[i] with
        | '`' ->
-         fprintf wr """<code class="fsharp">"""
+         fprintf wr """<code class="fsharp hljs">"""
          inCode text.[i] (i+1) (i+1) (text::lines)
        | c ->
          fprintf wr "%c" c
@@ -365,6 +365,7 @@ let printDesc wr item id2items (lines: list<string>) =
     | text::lines when i = text.Length ->
       inPara 0 lines
     | lines ->
+      fprintf wr "</p>\n"
       paras lines
   and inCode esc i0 i = function
     | (text : string)::lines when i < text.Length ->
@@ -403,7 +404,7 @@ let rec printSummary wr id2items deep inSection toSection drop item =
   if item.Kind = Some "header" then
     fprintfn wr """%s<span class="h3">// %s</span>""" prefix (List.head item.Doc |> asText)
   elif item.Kind = Some "spacer" then
-    fprintf wr "</code></pre>\n<pre><code class=\"fsharp\">"
+    fprintf wr "</code></pre>\n<pre><code class=\"fsharp hljs\">"
   else
     let spacing = deep && (item.Kind = Some "module" || item.Kind = Some "type")
     if spacing then
@@ -437,10 +438,9 @@ let rec printDescription wr id2items item =
      (not (List.isEmpty item.Doc) ||
       not (List.isEmpty item.Body)) then
     if needsSummary item then
-      fprintf wr "<pre><code class=\"fsharp\">"
+      fprintf wr "<div class=\"description\"><pre><code class=\"fsharp hljs\">"
       printSummary wr id2items false (Some "def") "dec" item.Indent item
       fprintf wr "</code></pre>\n"
-      fprintf wr "<div class=\"nested\">"
       match item.Doc with
        | [] -> ()
        | lines -> printDesc wr item id2items lines
@@ -488,50 +488,16 @@ let generate wr title path =
 <html>
 <head>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.1.1/normalize.css">
+<link rel="stylesheet" href="fs-libtool.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/github.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/highlight.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/fsharp.min.js"></script>
-<script>
-$(document).ready(function() {
-  $('code').each(function(i, block) {
-    hljs.highlightBlock(block);
-  });
-});
-</script>
+<script src="fs-libtool.js" async></script>
 """
   fprintfn wr "<title>%s Library Reference</title>" title
-  fprintfn wr "%s" """<style>
-p > code.hljs {
-  display: inline;
-  padding: 1px;
-}
-code {
-  font-family: "Lucida Console", Monaco, monospace;
-  font-size: 80%;
-  border-radius: 3px;
-}
-span.h3 {
-  display: inline-block;
-  margin: 0.75em 0em 0.5em 0em;
-}
-span.spacing {
-  display: inherit;
-  margin: 0.5em 0em 0.5em 0em;
-}
-div.nested {
-  padding-left: 1.5em;
-}
-a {
-  text-decoration: none;
-  font-weight: bold;
-}
-</style>
-</head>
+  fprintfn wr "%s" """</head>
 <body><table width="80%" align="center"><tr><td>"""
   fprintfn wr "<h1>%s Library Reference</h1>" title
   fprintfn wr "<h2>Synopsis</h2>"
-  fprintf wr "<pre><code class=\"fsharp\">"
+  fprintf wr "<pre><code class=\"fsharp hljs\">"
   printTokens wr id2items " " false (Some "dec") "def" model.Id model.Path model.Kind model.Tokens
   fprintf wr "\n"
   model.Body

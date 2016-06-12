@@ -63,6 +63,12 @@
     <Compile Include="Util.fs" />
     <Compile Include="RefGen.fs" />
     <Compile Include="Main.fs" />
+    <None Include="fs-libtool.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="fs-libtool.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
