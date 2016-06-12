@@ -29,7 +29,7 @@ let main _ =
   if Seq.isEmpty libs |> not then
     let exeDir = Reflection.Assembly.GetExecutingAssembly().Location |> Path.GetDirectoryName
     for file in ["fs-libtool.js"; "fs-libtool.css"] do
-      File.Copy (exeDir + "/" + file, "Docs/gh-pages/" + file)
+      File.Copy (exeDir + "/" + file, "Docs/gh-pages/" + file, true)
   for lib in libs do
     genDocs lib
   0
