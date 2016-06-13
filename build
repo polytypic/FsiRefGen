@@ -21,13 +21,7 @@ fi
 $RUN $PAKET install
 
 for SOLUTION in *.sln ; do
-  for CONFIG in Debug Release ; do
+  for CONFIG in Debug ; do
     $BUILD /nologo /verbosity:quiet /p:Configuration=$CONFIG $SOLUTION
   done
-done
-
-for TEMPLATE in *.paket.template ; do
-  if [ -f $TEMPLATE ] ; then
-    $RUN $PAKET pack output . templatefile $TEMPLATE
-  fi
 done
