@@ -8,7 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{46C440
 		paket.dependencies = paket.dependencies
 	EndProjectSection
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsLibTool", "FsLibTool.fsproj", "{1FB0B189-C022-43DD-BAE1-9BB7766B5028}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsiRefGen", "src/FsiRefGen.fsproj", "{1FB0B189-C022-43DD-BAE1-9BB7766B5028}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
