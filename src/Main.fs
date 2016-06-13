@@ -11,7 +11,7 @@ type Options = {
 }
 
 let help () =
-  printfn "Usage: %s -out <output-dir> -name <name> [-icon iconUrl] -- <input.fsi> ..."
+  printfn "Usage: %s --out <output-dir> --name <name> [--icon iconUrl] -- <input.fsi> ..."
     ^ Path.GetFileName exePath
   1
 
