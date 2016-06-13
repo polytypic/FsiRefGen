@@ -9,3 +9,7 @@ git clone https://github.com/polytypic/FsiRefGen.git
 ```bash
 <path-to>/FsiRefGen/run -out <output-dir> -name <name> [-icon iconUrl] -- <input.fsi> ...
 ```
+
+## Examples
+
+* [Hopac](http://hopac.github.io/Hopac/Hopac.html)
