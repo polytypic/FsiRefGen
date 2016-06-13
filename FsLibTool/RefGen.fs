@@ -449,9 +449,9 @@ let rec printDescription wr id2items item =
            |> Seq.iter (printDescription wr id2items)
       fprintf wr "</div>\n"
 
-let generate wr title path =
+let generate wr name (icon: option<string>) files =
   let units =
-    Directory.EnumerateFiles (path, "*.fsi")
+    files
     |> Seq.map (input >> itemize)
     |> List.ofSeq
   let model =
@@ -487,15 +487,20 @@ let generate wr title path =
   fprintf wr "%s" """<!doctype html>
 <html>
 <head>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.1.1/normalize.css">
+"""
+  match icon with
+   | None -> ()
+   | Some icon ->
+     fprintfn wr "<link rel=\"icon\" href=\"%s\">" icon
+  fprintf wr "%s" """<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.1.1/normalize.css">
 <link rel="stylesheet" href="fs-libtool.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/github.min.css">
 <script src="fs-libtool.js" async></script>
 """
-  fprintfn wr "<title>%s Library Reference</title>" title
+  fprintfn wr "<title>%s Library Reference</title>" name
   fprintfn wr "%s" """</head>
 <body><table width="80%" align="center"><tr><td>"""
-  fprintfn wr "<h1>%s Library Reference</h1>" title
+  fprintfn wr "<h1>%s Library Reference</h1>" name
   fprintfn wr "<h2>Synopsis</h2>"
   fprintf wr "<pre><code class=\"fsharp hljs\">"
   printTokens wr id2items " " false (Some "dec") "def" model.Id model.Path model.Kind model.Tokens
