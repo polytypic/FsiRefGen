@@ -13,4 +13,4 @@ if ! [ -f "$EXE" ] ; then
   popd
 fi
 
-$RUN "$(dirname "$0")/src/bin/Debug/FsiRefGen.exe" "$@"
+$RUN "$EXE" "$@"
