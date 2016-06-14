@@ -308,7 +308,7 @@ let printTokens wr id2items space spaced inSection toSection linkId path kind ts
              "def" (escapeSpaces link) (asText id)
           | _ ->
             let longId = String.concat "." (List.rev (id::idPath))
-            printf "Failed to resolve: %s\n" longId
+            printf "Couldn't resolve: %s\n" longId
             fprintf wr "%s" (asText id)
      
      parts id fullIdPath ts
