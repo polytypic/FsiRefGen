@@ -1,3 +1,7 @@
+`FsiRefGen` is a simple tool to generate HTML docs from given `.fsi` files.
+
+[![Travis Build Status](https://travis-ci.org/polytypic/FsiRefGen.svg?branch=master)](https://travis-ci.org/polytypic/FsiRefGen)
+
 ## Install
 
 ```bash
