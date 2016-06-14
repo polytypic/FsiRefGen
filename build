@@ -25,3 +25,7 @@ for SOLUTION in *.sln ; do
     $BUILD /nologo /verbosity:quiet /p:Configuration=$CONFIG $SOLUTION
   done
 done
+
+for template in *.paket.template ; do
+  $RUN $PAKET pack output . templatefile $template
+done

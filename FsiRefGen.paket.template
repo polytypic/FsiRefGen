@@ -1,0 +1,30 @@
+type
+        file
+id
+        FsiRefGen
+version
+        1.0.0
+summary
+        `FsiRefGen` is a simple tool to generate HTML docs from given `.fsi` files.
+description
+        `FsiRefGen` is a simple tool to generate HTML docs from given `.fsi` files.
+authors
+        Vesa Karvonen
+owners
+        Vesa Karvonen
+licenseUrl
+        https://github.com/polytypic/FsiRefGen/blob/master/LICENSE.md
+projectUrl
+        https://github.com/polytypic/FsiRefGen
+requireLicenseAcceptance
+        false
+copyright
+        © Vesa Karvonen
+tags
+        F# documentation fsi html
+files
+        src/bin/Release/FSharp.Core.dll  ==> tools
+        src/bin/Release/FsiRefGen.exe    ==> tools
+        src/bin/Release/PPrint.dll       ==> tools
+        src/bin/Release/fs-libtool.css   ==> tools
+        src/bin/Release/fs-libtool.js    ==> tools
