@@ -5,7 +5,7 @@ if hash mono &> /dev/null ; then
 fi
 
 DIR="$(dirname "$0")"
-EXE="$DIR/src/bin/Debug/FsiRefGen.exe"
+EXE="$DIR/src/bin/Release/FsiRefGen.exe"
 
 if ! [ -f "$EXE" ] ; then
   pushd "$DIR"
