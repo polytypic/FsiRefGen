@@ -452,8 +452,7 @@ let rec printDescription wr id2items item =
 let generate wr name (icon: option<string>) files =
   let units =
     files
-    |> Seq.map (input >> itemize)
-    |> List.ofSeq
+    |> List.map (input >> itemize)
   let model =
     let collect field =
       units
