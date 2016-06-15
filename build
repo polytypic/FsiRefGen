@@ -21,7 +21,7 @@ fi
 $RUN $PAKET install
 
 for SOLUTION in *.sln ; do
-  for CONFIG in Release ; do
+  for CONFIG in Debug Release ; do
     $BUILD /nologo /verbosity:quiet /p:Configuration=$CONFIG $SOLUTION
   done
 done
