@@ -492,9 +492,9 @@ let generate wr name (icon: option<string>) files =
    | Some icon ->
      fprintfn wr "<link rel=\"icon\" href=\"%s\">" icon
   fprintf wr "%s" """<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.1.1/normalize.css">
-<link rel="stylesheet" href="fs-libtool.css">
+<link rel="stylesheet" href="fsirefgen.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/github.min.css">
-<script src="fs-libtool.js" async></script>
+<script src="fsirefgen.js" async></script>
 """
   fprintfn wr "<title>%s Library Reference</title>" name
   fprintfn wr "%s" """</head>

@@ -63,10 +63,10 @@
     <Compile Include="Util.fs" />
     <Compile Include="RefGen.fs" />
     <Compile Include="Main.fs" />
-    <None Include="fs-libtool.js">
+    <None Include="fsirefgen.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="fs-libtool.css">
+    <None Include="fsirefgen.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
