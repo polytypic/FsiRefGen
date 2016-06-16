@@ -23,7 +23,7 @@ copyright
 tags
         F# documentation fsi html
 files
-        src/bin/Release/FSharp.Core.dll  ==> tools
-        src/bin/Release/FsiRefGen.exe    ==> tools
-        src/bin/Release/fs-libtool.css   ==> tools
-        src/bin/Release/fs-libtool.js    ==> tools
+        src/bin/Release/FSharp.Core.dll ==> tools
+        src/bin/Release/FsiRefGen.exe   ==> tools
+        src/bin/Release/fsirefgen.css   ==> tools
+        src/bin/Release/fsirefgen.js    ==> tools
