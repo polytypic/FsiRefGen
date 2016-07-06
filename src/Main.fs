@@ -23,7 +23,7 @@ let go = function
     Directory.CreateDirectory out |> ignore
 
     let exeDir = Path.GetDirectoryName exePath
-    for file in ["fs-libtool.js"; "fs-libtool.css"] do
+    for file in ["fsirefgen.js"; "fsirefgen.css"] do
       File.Copy (Path.Combine (exeDir, file), Path.Combine (out, file), true)
 
     let docFile = Path.Combine (out, name + ".html")
