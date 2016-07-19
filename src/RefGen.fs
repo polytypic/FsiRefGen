@@ -484,7 +484,7 @@ let generate wr name (icon: option<string>) files =
           item.Body
     addItems Map.empty model
   fprintf wr "%s" """<!doctype html>
-<html>
+<html lang="en">
 <head>
 """
   match icon with
