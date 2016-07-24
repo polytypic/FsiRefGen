@@ -1,4 +1,4 @@
-platform: x86
+platform: Any CPU
 
 environment:
   global:
