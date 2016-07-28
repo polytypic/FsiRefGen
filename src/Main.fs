@@ -7,6 +7,8 @@ type Options = {
   out: option<string>
   name: option<string>
   icon: option<string>
+  version: option<string>
+  projectUrl: option<string>
   files: list<string>
 }
 
@@ -19,6 +21,8 @@ let go = function
   | {out = Some out
      name = Some name
      icon = icon
+     version = version
+     projectUrl = projectUrl
      files = files} when not ^ List.isEmpty files ->
     Directory.CreateDirectory out |> ignore
 
@@ -29,7 +33,12 @@ let go = function
     let docFile = Path.Combine (out, name + ".html")
 
     use wr = new StreamWriter (docFile)
-    RefGen.generate wr name icon files
+    RefGen.generate wr
+      {name=name
+       icon=icon
+       version=version
+       projectUrl=projectUrl
+       files=files}
 
     0
   | _ ->
@@ -42,6 +51,10 @@ let rec parseOptions options = function
     parseOptions {options with name = Some name} args
   | "--icon" :: icon :: args ->
     parseOptions {options with icon = Some icon} args
+  | "--project-url" :: projectUrl :: args ->
+    parseOptions {options with projectUrl = Some projectUrl} args
+  | "--version" :: version :: args ->
+    parseOptions {options with version = Some version} args
   | "--" :: args ->
     go {options with files = args}
   | _ ->
@@ -50,4 +63,9 @@ let rec parseOptions options = function
 [<EntryPoint>]
 let main argv =
   List.ofArray argv
-  |> parseOptions {out = None; name = None; icon = None; files = []}
+  |> parseOptions {out = None
+                   name = None
+                   icon = None
+                   version = None
+                   projectUrl = None
+                   files = []}

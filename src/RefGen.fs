@@ -449,9 +449,17 @@ let rec printDescription wr id2items item =
            |> Seq.iter (printDescription wr id2items)
       fprintf wr "</div>\n"
 
-let generate wr name (icon: option<string>) files =
+type Options = {
+    name: string
+    icon: option<string>
+    version: option<string>
+    projectUrl: option<string>
+    files: list<string>
+  }
+
+let generate wr o =
   let units =
-    files
+    o.files
     |> List.map (input >> itemize)
   let model =
     let collect field =
@@ -487,19 +495,31 @@ let generate wr name (icon: option<string>) files =
 <html lang="en">
 <head>
 """
-  match icon with
-   | None -> ()
-   | Some icon ->
-     fprintfn wr "<link rel=\"icon\" href=\"%s\">" icon
+  o.icon
+  |> Option.iter ^
+       fprintfn wr """<link rel="icon" href="%s">"""
   fprintf wr "%s" """<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.1.1/normalize.css">
 <link rel="stylesheet" href="fsirefgen.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/github.min.css">
 <script src="fsirefgen.js" async></script>
 """
-  fprintfn wr "<title>%s Library Reference</title>" name
+  fprintfn wr "<title>%s Library Reference</title>" o.name
+
+  fprintf wr """<nav><div class="navbar">"""
+  fprintf wr """<span>"""
+  o.icon |> Option.iter ^ fprintf wr """<img src="%s" width="16" height="16">"""
+  match o.projectUrl with
+   | None -> fprintf wr """%s""" o.name
+   | Some url -> fprintf wr """<a href="%s">%s</a>""" url o.name
+  o.version |> Option.iter ^ fprintf wr "%s"
+  fprintf wr """</span>"""
+  fprintf wr """<a href="#">Top</a>"""
+  fprintfn wr """</div></nav>"""
+
   fprintfn wr "%s" """</head>
 <body><table width="80%" align="center"><tr><td>"""
-  fprintfn wr "<h1>%s Library Reference</h1>" name
+
+  fprintfn wr "<h1>%s Library Reference</h1>" o.name
   fprintfn wr "<h2>Synopsis</h2>"
   fprintf wr "<pre><code class=\"fsharp hljs\">"
   printTokens wr id2items " " false (Some "dec") "def" model.Id model.Path model.Kind model.Tokens
