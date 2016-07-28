@@ -50,7 +50,7 @@ let char = "\\'.*\\'"
 
 let tokenRegex =
   let extra = Array.concat [|keywords; punctuation|] |> strings
-  Regex (choice [|id; extra; sym; num; str; char|])
+  Regex ^ choice [|id; extra; sym; num; str; char|]
 
 let tokenize (s: string) =
   let rec loop ts = function
@@ -74,19 +74,19 @@ let (|Attr|_|) ts =
 
 let (|Id|_|) ts =
   let rec loop is = function
-   | (i, 0)::(".", 0)::ts when not (nonIdSet.Contains i) ->
+   | (i, 0)::(".", 0)::ts when not ^ nonIdSet.Contains i ->
      loop (i::is) ts
-   | (i, n)::ts when not (nonIdSet.Contains i) ->
+   | (i, n)::ts when not ^ nonIdSet.Contains i ->
      Some (i, n, is, ts)
    | _ ->
      None
   loop [] ts
 
 let summarize s =
-  tokenize s |> List.filter (function T"inline" -> false | _ -> true)
+  tokenize s |> List.filter ^ function T"inline" -> false | _ -> true
 
 let indentOf (s: String) =
-  let rec loop i = if i < s.Length && s.[i] = ' ' then loop (i+1) else i
+  let rec loop i = if i < s.Length && s.[i] = ' ' then loop ^ i+1 else i
   loop 0
 
 let trim s = (indentOf s, s.Trim ())
@@ -212,7 +212,7 @@ let spaceRegex = Regex " "
 let escapeSpaces s = spaceRegex.Replace (s, "%20")
 
 let printTokens wr id2items space spaced inSection toSection linkId path kind ts =
-  let linked = ref (Option.isNone linkId)
+  let linked = ref ^ Option.isNone linkId
   let spaces n =
     if n = 0 then ""
     elif spaced then String.replicate n space
@@ -226,7 +226,7 @@ let printTokens wr id2items space spaced inSection toSection linkId path kind ts
    | Id (id, n, fullIdPath, ts)
        when Option.isSome (Map.tryFind id id2items)
          && (id <> "unit" || id = "unit" && not (!linked)) ->
-     
+
      let rec parts id idPath ts =
        if not (!linked) && linkId = Some id then
          linked := true
@@ -280,7 +280,7 @@ let printTokens wr id2items space spaced inSection toSection linkId path kind ts
               items
               |> filterIfNotUnique kindsFilter
               |> filterIfNotUnique pathFilter
-              |> List.sortBy (fun item -> item.Kind)
+              |> List.sortBy ^ fun item -> item.Kind
 
          let items =
            match items with
@@ -295,7 +295,7 @@ let printTokens wr id2items space spaced inSection toSection linkId path kind ts
 
          let isUnique item =
            match item.Id with
-            | Some id -> 
+            | Some id ->
               match Map.tryFind id id2items with
                | Some [_] -> true
                | _ -> false
@@ -307,10 +307,10 @@ let printTokens wr id2items space spaced inSection toSection linkId path kind ts
             fprintf wr "<a href=\"#%s:%s\">%s</a>"
              "def" (escapeSpaces link) (asText id)
           | _ ->
-            let longId = String.concat "." (List.rev (id::idPath))
+            let longId = String.concat "." ^ List.rev (id::idPath)
             printf "Couldn't resolve: %s\n" longId
-            fprintf wr "%s" (asText id)
-     
+            fprintf wr "%s" ^ asText id
+
      parts id fullIdPath ts
      fprintf wr "%s" (spaces n)
      loop ts
@@ -340,8 +340,8 @@ let printDesc wr item id2items (lines: list<string>) =
   and inPre = function
     | text::lines when text.StartsWith "> " ->
       let code = text.Substring 2
-      fprintf wr "%s" (String.replicate (indentOf code) " ")
-      printTokens wr id2items " " true None "def" None path None (tokenize code)
+      fprintf wr "%s" ^ String.replicate (indentOf code) " "
+      printTokens wr id2items " " true None "def" None path None ^ tokenize code
       fprintf wr "\n"
       inPre lines
     | lines ->
@@ -370,13 +370,13 @@ let printDesc wr item id2items (lines: list<string>) =
   and inCode esc i0 i = function
     | (text : string)::lines when i < text.Length ->
       if esc = text.[i] then
-        printTokens wr id2items "&nbsp;" true None "def" None path None (tokenize (text.Substring (i0, i-i0)))
+        printTokens wr id2items "&nbsp;" true None "def" None path None ^ tokenize ^ text.Substring (i0, i-i0)
         fprintf wr "</code>"
         inPara (i+1) (text::lines)
       else
         inCode esc i0 (i+1) (text::lines)
     | text::lines when i = text.Length ->
-      printTokens wr id2items "&nbsp;" true None "def" None item.Path None (tokenize (text.Substring (i0, i-i0)))
+      printTokens wr id2items "&nbsp;" true None "def" None item.Path None ^ tokenize ^ text.Substring (i0, i-i0)
       fprintf wr "&nbsp;"
       inCode esc 0 0 lines
     | lines ->
@@ -388,12 +388,12 @@ let hasDocs item =
 
 let rec bodyHasDocs item =
   item.Body
-  |> List.exists (fun item ->
-     hasDocs item || bodyHasDocs item)
+  |> List.exists ^ fun item ->
+       hasDocs item || bodyHasDocs item
 
 let isObsolete (item: Item) =
   item.Attr
-  |> List.exists (List.exists (fst >> (=) "Obsolete"))
+  |> List.exists ^ List.exists (fst >> (=) "Obsolete")
 
 let needsSummary item =
   not (isObsolete item) && (hasDocs item || bodyHasDocs item)
@@ -421,15 +421,15 @@ let rec printSummary wr id2items deep inSection toSection drop item =
     if deep then
       item.Body
       |> Seq.filter (isObsolete >> not)
-      |> Seq.iter (printSummary wr id2items deep inSection toSection drop)
+      |> Seq.iter ^ printSummary wr id2items deep inSection toSection drop
     else
-      if not (List.exists (fun item -> Option.isSome item.Id) item.Body) then
+      if List.forall (fun item -> Option.isNone item.Id) item.Body then
         item.Body
         |> Seq.filter ^ fun item ->
              match item.Tokens with
               | T("{"|"}")::_ -> false
               | _ -> true
-        |> Seq.iter (printSummary wr id2items false inSection toSection drop)
+        |> Seq.iter ^ printSummary wr id2items false inSection toSection drop
     if spacing then
       fprintf wr "</span>"
 
@@ -444,9 +444,9 @@ let rec printDescription wr id2items item =
       match item.Doc with
        | [] -> ()
        | lines -> printDesc wr item id2items lines
-      if item.Body |> List.exists (fun item -> List.isEmpty item.Doc |> not)
+      if item.Body |> List.exists ^ fun item -> List.isEmpty item.Doc |> not
       then item.Body
-           |> Seq.iter (printDescription wr id2items)
+           |> Seq.iter ^ printDescription wr id2items
       fprintf wr "</div>\n"
 
 type Options = {
