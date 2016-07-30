@@ -113,6 +113,13 @@ let empty =
   Tokens = []
   Body = []}
 
+let nonwordRegex = Regex "\\W+"
+let asId =
+  nonwordRegex.Split
+  >> Array.filter ^ (<>) ""
+  >> Array.map ^ fun s -> s.ToLower ()
+  >> String.concat "-"
+
 let rec itemize ls =
   let rec outside indent path items docs attrs = function
      | [] -> (List.rev items, [])
@@ -135,11 +142,12 @@ let rec itemize ls =
        elif text.StartsWith "///" then
          outside indent path items (text.Substring 3::docs) attrs lines
        elif text.StartsWith "//# " then
-         let item = {Doc = [text.Substring 4]
+         let text = text.Substring 4
+         let item = {Doc = [text]
                      Attr = []
                      Kind = Some "header"
-                     Id = None
-                     Path = []
+                     Id = Some ^ asId text
+                     Path = path
                      Indent = i
                      Tokens = []
                      Body = []}
@@ -402,7 +410,15 @@ let rec printSummary wr id2items deep inSection toSection drop item =
   let indent = max (item.Indent - drop) 0
   let prefix = String.replicate indent " "
   if item.Kind = Some "header" then
-    fprintfn wr """%s<span class="h3">// %s</span>""" prefix (List.head item.Doc |> asText)
+    let id =
+      Option.toList item.Id @ item.Path
+      |> List.rev
+      |> String.concat "."
+    fprintfn wr """%s<a id="%s" href="#%s" class="h3">// %s</a>"""
+      <| prefix
+      <| id
+      <| id
+      <| asText ^ List.head item.Doc
   elif item.Kind = Some "spacer" then
     fprintf wr "</code></pre>\n<pre><code class=\"fsharp hljs\">"
   else
