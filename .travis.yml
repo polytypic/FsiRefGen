@@ -2,9 +2,6 @@ language: csharp
 
 sudo: false
 
-notifications:
-  email: false
-
 mono:
   - latest
 
