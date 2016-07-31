@@ -451,6 +451,7 @@ let rec printSummary wr id2items deep inSection toSection drop item =
 
 let rec printDescription wr id2items item =
   if Option.isSome item.Id &&
+     not (item.Kind = Some "header") &&
      (not (List.isEmpty item.Doc) ||
       not (List.isEmpty item.Body)) then
     if needsSummary item then
