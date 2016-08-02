@@ -186,14 +186,15 @@ let rec itemize ls =
           | T("module"|"namespace" as kind)::T id::[T"="]
           | T("abstract"|"default"|"override"|"member"|"val" as kind)::T id::(T":"::_|T"<"::_)
           | T("type" as kind)::T id::([]|T"<"::_|T":>"::_|T"="::_|T"with"::_)
-          | T("new" as id as kind)::T":"::_ ->
+          | T("new" as id as kind)::T":"::_
+          | T("inherit"|"interface" as kind)::T id::_ ->
             nest path docs attrs kind id i tokens
           | T("mutable")::T id::T":"::_
           | T id::T":"::_ ->
             nest path docs attrs "field" id i tokens
           | Attr (attr, []) ->
             outside indent path items docs (attr::attrs) lines
-          | T("{"|"}"|"->"|"*"|"inherit"|"interface"|"end"|"|")::_ ->
+          | T("{"|"}"|"->"|"*"|"end"|"|")::_ ->
             outside indent path ({empty with Tokens = tokens; Indent = i}::items) [] [] lines
           | _ ->
             failwithf "Unrecognized: %A" tokens
