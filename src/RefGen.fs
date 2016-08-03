@@ -24,7 +24,7 @@ let keywords =
     "if"; "inherit"; "inline"; "in"; "interface";
     "let!"; "let";
     "match"; "member"; "module"; "mutable";
-    "namespace"; "new";
+    "namespace"; // "new"; // XXX new is treated as an id
     "of"; "open"; "override";
     "rec"; "return!"; "return";
     "static"; "struct";
