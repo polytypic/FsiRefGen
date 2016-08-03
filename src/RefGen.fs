@@ -154,12 +154,17 @@ let rec itemize ls =
          outside indent path (item::items) [] [] lines
        else
          let nest path docs attrs kind id indent' tokens =
-            let (body, lines) = outside indent' (id::path) [] [] [] lines
+            let overloadedPath =
+              items
+              |> Seq.filter ^ fun i -> i.Id = Some id && i.Kind = Some kind
+              |> Seq.length
+              |> function 0 -> path | n -> sprintf "%d" n :: path
+            let (body, lines) = outside indent' (id::overloadedPath) [] [] [] lines
             let item = {Doc = List.rev docs
                         Attr = List.rev attrs
                         Kind = Some kind
                         Id = Some id
-                        Path = path
+                        Path = overloadedPath
                         Indent = i
                         Tokens = tokens
                         Body = body}
