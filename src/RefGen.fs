@@ -120,12 +120,13 @@ let asId =
   >> Array.map ^ fun s -> s.ToLower ()
   >> String.concat "-"
 
+let ignoredLine = Regex "^(|#.*|open .*|//|//[^/#].*)$"
+
 let rec itemize ls =
   let rec outside indent path items docs attrs = function
      | [] -> (List.rev items, [])
      | (i, text: string)::lines ->
-       if text.Length = 0
-          || List.exists text.StartsWith ["#"; "// "; "open "] then
+       if ignoredLine.IsMatch text then
          outside indent path items docs attrs lines
        elif i <= indent then
          (List.rev items, (i, text)::lines)
