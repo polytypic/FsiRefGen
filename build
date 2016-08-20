@@ -13,19 +13,19 @@ fi
 
 PAKET=.paket/paket.exe
 
-if [ ! -f $PAKET ] ; then
-  $RUN .paket/paket.bootstrapper.exe
+$RUN .paket/paket.bootstrapper.exe -s --max-file-age=60
+if [ ! -x $PAKET ] ; then
   chmod +x $PAKET
 fi
 
-$RUN $PAKET install
+$RUN $PAKET --silent restore
 
 for SOLUTION in *.sln ; do
   for CONFIG in Debug Release ; do
-    $BUILD /nologo /verbosity:quiet /p:Configuration=$CONFIG $SOLUTION
+    $BUILD /nologo /verbosity:quiet /p:Configuration="$CONFIG" "$SOLUTION"
   done
 done
 
-for template in *.paket.template ; do
-  $RUN $PAKET pack output . templatefile $template
+for TEMPLATE in *.paket.template ; do
+  $RUN $PAKET --silent pack output . templatefile "$TEMPLATE"
 done
