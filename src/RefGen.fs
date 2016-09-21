@@ -122,6 +122,10 @@ let asId =
 
 let ignoredLine = Regex "^(|#.*|open .*|//|//[^/#].*)$"
 
+let isObsolete (item: Item) =
+  item.Attr
+  |> List.exists ^ List.exists (fst >> (=) "Obsolete")
+
 let rec itemize ls =
   let rec outside indent path items docs attrs = function
      | [] -> (List.rev items, [])
@@ -169,7 +173,8 @@ let rec itemize ls =
                         Indent = i
                         Tokens = tokens
                         Body = body}
-            outside indent path (item::items) [] [] lines
+            let items = if isObsolete item then items else item::items
+            outside indent path items [] [] lines
          let tokens = summarize text
          match tokens with
           | T("namespace"|"module" as kind)::Id (id, _, path, []) ->
@@ -406,12 +411,8 @@ let rec bodyHasDocs item =
   |> List.exists ^ fun item ->
        hasDocs item || bodyHasDocs item
 
-let isObsolete (item: Item) =
-  item.Attr
-  |> List.exists ^ List.exists (fst >> (=) "Obsolete")
-
 let needsSummary item =
-  not (isObsolete item) && (hasDocs item || bodyHasDocs item)
+  hasDocs item || bodyHasDocs item
 
 let rec printSummary wr id2items deep inSection toSection drop item =
   let indent = max (item.Indent - drop) 0
@@ -443,7 +444,6 @@ let rec printSummary wr id2items deep inSection toSection drop item =
     fprintf wr "\n"
     if deep then
       item.Body
-      |> Seq.filter (isObsolete >> not)
       |> Seq.iter ^ printSummary wr id2items deep inSection toSection drop
     else
       if List.forall (fun item -> Option.isNone item.Id) item.Body then
@@ -549,7 +549,6 @@ let generate wr o =
   printTokens wr id2items " " false (Some "dec") "def" model.Id model.Path model.Kind model.Tokens
   fprintf wr "\n"
   model.Body
-  |> Seq.filter (isObsolete >> not)
   |> Seq.iter ^ printSummary wr id2items true (Some "dec") "def" 0
   fprintf wr "</code></pre>\n"
   fprintf wr "<h2>Description</h2>\n"
