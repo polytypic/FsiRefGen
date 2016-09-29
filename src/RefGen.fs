@@ -524,7 +524,7 @@ let generate wr o =
        fprintfn wr """<link rel="icon" href="%s">"""
   fprintf wr "%s" """<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.1.1/normalize.css">
 <link rel="stylesheet" href="fsirefgen.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/github.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/styles/github-gist.min.css">
 <script src="fsirefgen.js" async></script>
 """
   fprintfn wr "<title>%s Library Reference</title>" o.name
