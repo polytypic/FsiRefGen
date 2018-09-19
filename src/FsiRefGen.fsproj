@@ -14,8 +14,12 @@
     <Compile Include="Util.fs" />
     <Compile Include="RefGen.fs" />
     <Compile Include="Main.fs" />
-    <None Include="fsirefgen.js" />
-    <None Include="fsirefgen.css" />
+    <Content Include="fsirefgen.js"/>
+    <Content Include="fsirefgen.css"/>
   </ItemGroup>
+  <Target Name = "CopyFiles" AfterTargets="build">
+    <Copy DestinationFolder="$(OutputPath)" SourceFiles="fsirefgen.js" SkipUnchangedFiles="false" />
+    <Copy DestinationFolder="$(OutputPath)" SourceFiles="fsirefgen.css" SkipUnchangedFiles="false" />
+  </Target>
   <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>

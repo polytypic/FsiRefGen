@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -e -x
 
 DIR="$(dirname "$0")"
 PROJECT="${PROJECT:-$DIR/src/FsiRefGen.fsproj}"
@@ -9,4 +9,4 @@ if ! [ -f "$PROJECT" ] ; then
   popd
 fi
 
-dotnet run --framework netcoreapp2.0 "$PROJECT" -- "$@"
+dotnet run --framework netcoreapp2.0 --project "$PROJECT" -- "$@"
