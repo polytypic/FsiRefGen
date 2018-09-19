@@ -1,16 +1,12 @@
 #!/bin/bash -e
 
-if hash mono &> /dev/null ; then
-  RUN=mono
-fi
-
 DIR="$(dirname "$0")"
-EXE="$DIR/src/bin/Release/FsiRefGen.exe"
+PROJECT="${PROJECT:-$DIR/src/FsiRefGen.fsproj}"
 
-if ! [ -f "$EXE" ] ; then
+if ! [ -f "$PROJECT" ] ; then
   pushd "$DIR"
   ./build
   popd
 fi
 
-$RUN "$EXE" "$@"
+dotnet run --framework netcoreapp2.0 "$PROJECT" -- "$@"

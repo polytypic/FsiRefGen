@@ -1,31 +1,14 @@
 #!/bin/bash -e
 
-if hash xbuild &> /dev/null ; then
-  BUILD=xbuild
+dotnet restore
+dotnet build FsiRefGen.sln
+
+if hash mono &> /dev/null ; then
   RUN=mono
-elif hash msbuild.exe &> /dev/null ; then
-  BUILD=msbuild.exe
-  RUN=
 else
-  echo "Couldn't find build command."
-  exit 1
+  RUN=
 fi
-
-PAKET=.paket/paket.exe
-
-$RUN .paket/paket.bootstrapper.exe -s --max-file-age=60
-if [ ! -x $PAKET ] ; then
-  chmod +x $PAKET
-fi
-
-$RUN $PAKET --silent restore
-
-for SOLUTION in *.sln ; do
-  for CONFIG in Debug Release ; do
-    $BUILD /nologo /verbosity:quiet /p:Configuration="$CONFIG" "$SOLUTION"
-  done
-done
 
 for TEMPLATE in *.paket.template ; do
-  $RUN $PAKET --silent pack output . templatefile "$TEMPLATE"
+  $RUN .paket/paket.exe --silent pack output . templatefile "$TEMPLATE"
 done
