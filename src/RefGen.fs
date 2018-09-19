@@ -195,6 +195,7 @@ let rec itemize ls =
           | T("val" as kind)::T"("::T id::T")"::T":"::_
           | T("val" as kind)::T"(|"::T id::T"|)"::T":"::_
           | T("module"|"namespace" as kind)::T id::[T"="]
+          | T("module"|"namespace" as kind)::T _::T id::[T"="] // with visibility modifier
           | T("abstract"|"default"|"override"|"member"|"val" as kind)::T id::(T":"::_|T"<"::_)
           | T("type" as kind)::T id::([]|T"<"::_|T":>"::_|T"="::_|T"with"::_)
           | T("new" as id as kind)::T":"::_
