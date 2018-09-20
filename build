@@ -10,5 +10,5 @@ else
 fi
 
 for TEMPLATE in *.paket.template ; do
-  $RUN .paket/paket.exe --silent pack output . templatefile "$TEMPLATE"
+  $RUN .paket/paket.exe --silent pack output . --template "$TEMPLATE"
 done
