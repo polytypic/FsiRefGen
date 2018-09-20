@@ -24,6 +24,7 @@ tags
         F# documentation fsi html
 files
         packages/FSharp.Core/lib/netstandard1.6/FSharp.Core.dll ==> tools
-        src/bin/Release/netcoreapp2.0/FsiRefGen.exe   ==> tools
+        src/bin/Release/netcoreapp2.0/FsiRefGen.dll   ==> tools
+        src/bin/Release/netcoreapp2.0/FsiRefGen.dll.config   ==> tools
         src/bin/Release/netcoreapp2.0/fsirefgen.css   ==> tools
         src/bin/Release/netcoreapp2.0/fsirefgen.js    ==> tools
