@@ -3,7 +3,7 @@ type
 id
         FsiRefGen
 version
-        1.0.0
+        2.0.0
 summary
         `FsiRefGen` is a simple tool to generate HTML docs from given `.fsi` files.
 description
@@ -24,7 +24,7 @@ tags
         F# documentation fsi html
 files
         packages/FSharp.Core/lib/netstandard1.6/FSharp.Core.dll ==> tools
-        src/bin/Release/netcoreapp2.0/FsiRefGen.dll   ==> tools
-        src/bin/Release/netcoreapp2.0/FsiRefGen.dll.config   ==> tools
-        src/bin/Release/netcoreapp2.0/fsirefgen.css   ==> tools
-        src/bin/Release/netcoreapp2.0/fsirefgen.js    ==> tools
+        src/bin/Release/netcoreapp2.2/FsiRefGen.dll   ==> tools
+        src/bin/Release/netcoreapp2.2/FsiRefGen.dll.config   ==> tools
+        src/bin/Release/netcoreapp2.2/fsirefgen.css   ==> tools
+        src/bin/Release/netcoreapp2.2/fsirefgen.js    ==> tools

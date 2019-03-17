@@ -2,9 +2,7 @@ language: csharp
 
 sudo: false
 
-dotnet: 2.1.4
-mono:
-- latest
+dotnet: 2.2.103
 
 script:
 - ./build

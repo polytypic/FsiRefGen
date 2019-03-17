@@ -1,14 +1,8 @@
 #!/bin/bash -e
 
 dotnet restore
-dotnet build FsiRefGen.sln
-
-if hash mono &> /dev/null ; then
-  RUN=mono
-else
-  RUN=
-fi
+dotnet build -c Release FsiRefGen.sln
 
 for TEMPLATE in *.paket.template ; do
-  $RUN .paket/paket.exe --silent pack output . --template "$TEMPLATE"
+  $RUN .paket/paket --silent pack . --template "$TEMPLATE"
 done
