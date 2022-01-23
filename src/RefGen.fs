@@ -240,17 +240,17 @@ let printTokens wr id2items space spaced inSection toSection linkId path kind ts
     else space
   let rec loop = function
    | (k, n)::ts when keywordSet.Contains k ->
-     if k = ":" || k = "->" then linked := true
+     if k = ":" || k = "->" then linked.Value <- true
      fprintf wr "%s%s" (asText k) (spaces n) ; loop ts
    | ("'", _)::(t, n)::ts ->
      fprintf wr "'%s%s" (asText t) (spaces n) ; loop ts
    | Id (id, n, fullIdPath, ts)
        when Option.isSome (Map.tryFind id id2items)
-         && (id <> "unit" || id = "unit" && not (!linked)) ->
+         && (id <> "unit" || id = "unit" && not linked.Value) ->
 
      let rec parts id idPath ts =
-       if not (!linked) && linkId = Some id then
-         linked := true
+       if not linked.Value && linkId = Some id then
+         linked.Value <- true
 
          match idPath with
           | [] -> ()
