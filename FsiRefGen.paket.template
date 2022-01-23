@@ -23,8 +23,8 @@ copyright
 tags
         F# documentation fsi html
 files
-        packages/FSharp.Core/lib/netstandard1.6/FSharp.Core.dll ==> tools
-        src/bin/Release/netcoreapp2.2/FsiRefGen.dll   ==> tools
-        src/bin/Release/netcoreapp2.2/FsiRefGen.dll.config   ==> tools
-        src/bin/Release/netcoreapp2.2/fsirefgen.css   ==> tools
-        src/bin/Release/netcoreapp2.2/fsirefgen.js    ==> tools
+        packages/FSharp.Core/lib/netstandard2.1/FSharp.Core.dll ==> tools
+        src/bin/Release/net6.0/FsiRefGen.dll   ==> tools
+        src/bin/Release/net6.0/FsiRefGen.dll.config   ==> tools
+        src/bin/Release/net6.0/fsirefgen.css   ==> tools
+        src/bin/Release/net6.0/fsirefgen.js    ==> tools
