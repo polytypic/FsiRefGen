@@ -9,4 +9,4 @@ if ! [ -f "$PROJECT" ] ; then
   popd
 fi
 
-dotnet run --framework netcoreapp2.0 --project "$PROJECT" -- "$@"
+dotnet run --framework net6.0 --project "$PROJECT" -- "$@"
